@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lights Out - Panel de Administración</title>
+  <title>Juegos Fatima - Panel de Administración</title>
   <style>
     :root {
       --bg-main: #0a0e17;
@@ -32,39 +32,46 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 24px 16px;
+      padding: 20px 16px;
     }
 
     .container {
       width: 100%;
-      max-width: 680px;
+      max-width: 700px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 18px;
     }
 
     header {
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid var(--border);
-      padding-bottom: 16px;
+      padding-bottom: 14px;
+      gap: 10px;
     }
 
     h1 {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       color: var(--accent);
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
+    .header-links {
+      display: flex;
+      gap: 8px;
+    }
+
     .back-btn {
       color: var(--text-muted);
       text-decoration: none;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       border: 1px solid var(--border);
-      padding: 8px 12px;
+      padding: 6px 12px;
       border-radius: 8px;
       transition: all 0.2s;
     }
@@ -72,6 +79,7 @@
     .back-btn:hover {
       color: #fff;
       border-color: var(--accent);
+      background: rgba(0, 242, 254, 0.1);
     }
 
     .card {
@@ -118,11 +126,11 @@
     }
 
     .btn {
-      padding: 10px 18px;
+      padding: 9px 16px;
       border-radius: 8px;
       border: none;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
@@ -158,11 +166,39 @@
       background: #334155;
     }
 
+    /* TABS */
+    .game-tabs {
+      display: flex;
+      gap: 6px;
+      background: #0d1424;
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .game-tab-btn {
+      flex: 1;
+      padding: 8px 12px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .game-tab-btn.active {
+      background: var(--accent);
+      color: #080c14;
+    }
+
     .stats-summary {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
-      margin-bottom: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
     }
 
     .stat-box {
@@ -174,13 +210,13 @@
     }
 
     .stat-val {
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       font-weight: 700;
       color: var(--accent);
     }
 
     .stat-lbl {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       color: var(--text-muted);
       text-transform: uppercase;
       margin-top: 2px;
@@ -189,7 +225,7 @@
     .actions-grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
       margin-top: 14px;
     }
 
@@ -199,7 +235,7 @@
       border-radius: 8px;
       font-family: monospace;
       font-size: 0.8rem;
-      max-height: 220px;
+      max-height: 200px;
       overflow-y: auto;
       color: #7dd3fc;
       border: 1px solid rgba(255, 255, 255, 0.05);
@@ -214,7 +250,7 @@
       bottom: 24px;
       background: #1e293b;
       color: #fff;
-      padding: 12px 20px;
+      padding: 10px 18px;
       border-radius: 20px;
       border: 1px solid var(--accent);
       font-size: 0.85rem;
@@ -234,7 +270,10 @@
   <div class="container">
     <header>
       <h1>⚙️ Panel de Administración</h1>
-      <a href="index.html" class="back-btn">⬅ Volver al Juego</a>
+      <div class="header-links">
+        <a href="index.html" class="back-btn">💡 Lights Out</a>
+        <a href="flow.html" class="back-btn">🌊 Flow</a>
+      </div>
     </header>
 
     <!-- PANTALLA DE ACCESO CON CLAVE -->
@@ -242,47 +281,36 @@
       <div style="font-size: 2.5rem;">🔒</div>
       <h2>Acceso Protegido</h2>
       <p style="color: var(--text-muted); font-size: 0.85rem;">
-        Ingresa la clave de administrador para gestionar la tabla de puntajes.<br>
+        Ingresa la clave de administrador para gestionar las tablas de puntajes.<br>
         (Clave por defecto: <strong>1234</strong>)
       </p>
       <input type="password" id="admin-pass" placeholder="Ingresa la clave" autofocus>
       <button class="btn btn-primary" onclick="verifyPassword()">Ingresar al Panel</button>
     </div>
 
-    <!-- PANEL PRINCIPAL (Visible tras ingresar clave) -->
-    <div id="main-panel" class="hidden" style="display: flex; flex-direction: column; gap: 20px;">
+    <!-- PANEL PRINCIPAL -->
+    <div id="main-panel" class="hidden" style="display: flex; flex-direction: column; gap: 18px;">
       
-      <!-- Resumen -->
+      <!-- Pestañas de Juegos -->
+      <div class="game-tabs">
+        <button class="game-tab-btn active" id="tab-lightsout" onclick="switchGameTab('lightsout')">💡 Lights Out</button>
+        <button class="game-tab-btn" id="tab-flow" onclick="switchGameTab('flow')">🌊 Flow Free</button>
+      </div>
+
+      <!-- Resumen del Juego Seleccionado -->
       <div class="card">
-        <h2 class="card-title">📊 Resumen de Puntajes</h2>
-        <div class="stats-summary">
-          <div class="stat-box">
-            <div class="stat-val" id="total-scores">0</div>
-            <div class="stat-lbl">Partidas Registradas</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-val" id="scores-1x5">0</div>
-            <div class="stat-lbl">Nivel 1x5</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-val" id="scores-3x3">0</div>
-            <div class="stat-lbl">Nivel 3x3</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-val" id="scores-5x5">0</div>
-            <div class="stat-lbl">Nivel 5x5</div>
-          </div>
-        </div>
+        <h2 class="card-title" id="summary-title">📊 Resumen de Puntajes</h2>
+        <div class="stats-summary" id="stats-container"></div>
 
         <div class="actions-grid">
-          <button class="btn btn-danger" onclick="clearAllScores()">
-            🗑️ Vaciar Lista Completa
+          <button class="btn btn-danger" onclick="clearSelectedGameScores()">
+            🗑️ Vaciar Puntajes de este Juego
           </button>
           <button class="btn btn-secondary" onclick="downloadJSON()">
             📥 Descargar Backup JSON
           </button>
           <label class="btn btn-secondary" style="cursor: pointer;">
-            📤 Restaurar desde JSON
+            📤 Restaurar JSON
             <input type="file" id="file-input" accept=".json" style="display: none;" onchange="importJSON(event)">
           </label>
         </div>
@@ -290,7 +318,7 @@
 
       <!-- Visor de JSON -->
       <div class="card">
-        <h2 class="card-title">📄 Archivo JSON en Memoria</h2>
+        <h2 class="card-title">📄 Archivo JSON en Memoria (<span id="json-label">lightsout</span>)</h2>
         <pre id="json-viewer">[]</pre>
       </div>
 
@@ -309,9 +337,14 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    const STORAGE_KEY = 'lightsout_scores_json';
+    const STORAGE_KEYS = {
+      lightsout: 'lightsout_scores_json',
+      flow: 'flow_scores_json'
+    };
     const PIN_KEY = 'lightsout_admin_pin';
     const DEFAULT_PIN = '1234';
+
+    let activeGame = 'lightsout';
 
     function getAdminPin() {
       return localStorage.getItem(PIN_KEY) || DEFAULT_PIN;
@@ -329,52 +362,72 @@
       }
     }
 
-    // Permitir presionar Enter en el input de clave
     document.getElementById('admin-pass').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') verifyPassword();
     });
 
-    function loadData() {
-      let scores = [];
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        scores = raw ? JSON.parse(raw) : [];
-      } catch (e) {
-        scores = [];
-      }
-
-      // Actualizar contadores
-      document.getElementById('total-scores').textContent = scores.length;
-      document.getElementById('scores-1x5').textContent = scores.filter(s => s.mode === '1x5').length;
-      document.getElementById('scores-3x3').textContent = scores.filter(s => s.mode === '3x3').length;
-      document.getElementById('scores-5x5').textContent = scores.filter(s => s.mode === '5x5').length;
-
-      // Actualizar visor JSON
-      document.getElementById('json-viewer').textContent = JSON.stringify(scores, null, 2);
+    function switchGameTab(game) {
+      activeGame = game;
+      document.getElementById('tab-lightsout').classList.toggle('active', game === 'lightsout');
+      document.getElementById('tab-flow').classList.toggle('active', game === 'flow');
+      loadData();
     }
 
-    function clearAllScores() {
-      if (confirm("⚠️ ¿Confirmas que deseas vaciar TODOS los puntajes guardados? Esta acción no se puede deshacer.")) {
-        localStorage.removeItem(STORAGE_KEY);
-        ['1x5', '3x3', '5x5'].forEach(m => localStorage.removeItem(`lightsout_best_${m}`));
-        
-        // Notificar al backend si existe (ESP32 / servidor)
-        if (window.location.protocol.startsWith('http')) {
-          fetch('/api/scores/clear?key=' + encodeURIComponent(getAdminPin()), { method: 'POST' }).catch(() => {});
-        }
+    function loadData() {
+      const key = STORAGE_KEYS[activeGame];
+      let scores = [];
+      try {
+        const raw = localStorage.getItem(key);
+        scores = raw ? JSON.parse(raw) : [];
+      } catch (e) { scores = []; }
 
+      const title = document.getElementById('summary-title');
+      const stats = document.getElementById('stats-container');
+      const jsonViewer = document.getElementById('json-viewer');
+      document.getElementById('json-label').textContent = key;
+
+      if (activeGame === 'lightsout') {
+        title.innerHTML = '📊 Resumen: Lights Out';
+        stats.innerHTML = `
+          <div class="stat-box"><div class="stat-val">${scores.length}</div><div class="stat-lbl">Partidas</div></div>
+          <div class="stat-box"><div class="stat-val">${scores.filter(s => s.mode === '1x5').length}</div><div class="stat-lbl">1x5</div></div>
+          <div class="stat-box"><div class="stat-val">${scores.filter(s => s.mode === '3x3').length}</div><div class="stat-lbl">3x3</div></div>
+          <div class="stat-box"><div class="stat-val">${scores.filter(s => s.mode === '5x5').length}</div><div class="stat-lbl">5x5</div></div>
+        `;
+      } else {
+        title.innerHTML = '📊 Resumen: Flow Free';
+        stats.innerHTML = `
+          <div class="stat-box"><div class="stat-val">${scores.length}</div><div class="stat-lbl">Partidas</div></div>
+          <div class="stat-box"><div class="stat-val">${scores.filter(s => s.size === '5x5').length}</div><div class="stat-lbl">5x5</div></div>
+          <div class="stat-box"><div class="stat-val">${scores.filter(s => s.size === '6x6').length}</div><div class="stat-lbl">6x6</div></div>
+          <div class="stat-box"><div class="stat-val">${scores.filter(s => s.size === '7x7').length}</div><div class="stat-lbl">7x7</div></div>
+          <div class="stat-box"><div class="stat-val">${scores.filter(s => s.size === '8x8').length}</div><div class="stat-lbl">8x8</div></div>
+        `;
+      }
+
+      jsonViewer.textContent = JSON.stringify(scores, null, 2);
+    }
+
+    function clearSelectedGameScores() {
+      const name = activeGame === 'lightsout' ? 'Lights Out' : 'Flow Free';
+      if (confirm(`⚠️ ¿Deseas vaciar TODOS los puntajes de ${name}?`)) {
+        localStorage.removeItem(STORAGE_KEYS[activeGame]);
+        if (activeGame === 'lightsout') {
+          ['1x5', '3x3', '5x5'].forEach(m => localStorage.removeItem(`lightsout_best_${m}`));
+        }
         loadData();
-        showToast("¡Puntajes eliminados exitosamente!");
+        showToast(`¡Puntajes de ${name} eliminados!`);
       }
     }
 
     function downloadJSON() {
-      const raw = localStorage.getItem(STORAGE_KEY) || '[]';
+      const key = STORAGE_KEYS[activeGame];
+      const raw = localStorage.getItem(key) || '[]';
       const blob = new Blob([raw], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `lightsout_scores_${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `${activeGame}_scores_${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
       showToast("Descarga iniciada");
@@ -389,14 +442,14 @@
         try {
           const parsed = JSON.parse(event.target.result);
           if (Array.isArray(parsed)) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+            localStorage.setItem(STORAGE_KEYS[activeGame], JSON.stringify(parsed));
             loadData();
             showToast("Puntajes restaurados correctamente");
           } else {
-            alert("El archivo JSON debe contener un arreglo de puntajes válido.");
+            alert("El archivo JSON debe contener un arreglo de datos.");
           }
         } catch (err) {
-          alert("Error al leer el archivo JSON: formato inválido.");
+          alert("Error: Archivo JSON no válido.");
         }
       };
       reader.readAsText(file);

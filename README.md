@@ -1,129 +1,90 @@
-# 💡 Lights Out - Desafío de Luces
+# 🕹️ Juegos Fatima - Arcade Web & Microcontroladores
 
-Una versión moderna, responsiva y 100% autónoma del clásico rompecabezas electrónico **Lights Out** (Tiger Electronics, 1995 / [puzzle.now/lightsout](https://puzzle.now/lightsout/)).
-
-Diseñado para funcionar en navegadores web de PC, tablets y smartphones, y optimizado específicamente para ser servido directamente desde microcontroladores **ESP32-C3**, **ESP32-S3**, **GitHub Pages** o una **Raspberry Pi 4**.
+Una colección de rompecabezas clásicos modernos, responsivos y 100% autónomos, listos para jugar en navegadores de PC, tablets, smartphones, **GitHub Pages**, microcontroladores **ESP32-C3 / ESP32-S3** o una **Raspberry Pi 4**.
 
 ---
 
-## 🎮 Niveles y Modos Disponibles
+## 🎮 Juegos Incluidos
 
-1. **Línea 1x5 (5 botones)**: 
-   - 1 fila de 5 luces contiguas.
-   - Ideal para partidas rápidas, niños o para entender la mecánica de conmutación.
-   - Al pulsar un botón, conmuta su estado y el de sus vecinas inmediatas (izquierda y derecha).
-2. **Matriz 3x3 (9 botones)**: 
-   - 3 filas por 3 columnas.
-   - Dificultad intermedia clásica. Conmuta la celda y sus 4 vecinas ortogonales (arriba, abajo, izquierda, derecha).
-3. **Matriz 5x5 (25 botones)**: 
-   - El tamaño clásico original del juego.
-   - Desafío completo con miles de combinaciones posibles.
+### 1. 💡 Lights Out ([`index.html`](index.html))
+- Inspirado en el clásico de Tiger Electronics (1995) y [puzzle.now/lightsout](https://puzzle.now/lightsout/).
+- **Objetivo**: Apagar todas las luces del tablero. Cada pulsación conmuta la celda y sus vecinas directas.
+- **Niveles**:
+  - **Línea 1x5** (5 botones contiguos).
+  - **Matriz 3x3** (9 botones).
+  - **Matriz 5x5** (25 botones clásico).
+- **Pista Inteligente (💡 Pista)**: Resolvedor Gaussiano exacto sobre GF(2) que indica el movimiento óptimo en tiempo real.
+- **100% Soluble**: Generación matemática sin acertijos imposibles.
 
----
-
-## 🏆 Tabla de Puntajes y Jugadores (JSON)
-
-- **Registro de Nombre**: Al ganar cualquier nivel, el jugador puede ingresar su nombre para guardar su récord.
-- **Formato Estándar JSON**: Cada partida se guarda como un objeto estructurado:
-  ```json
-  {
-    "id": "score_1727654321000",
-    "player": "Fátima",
-    "mode": "3x3",
-    "moves": 9,
-    "time": 24,
-    "date": "29/09/2026, 23:30"
-  }
-  ```
-- **Exportación e Importación**:
-  - Puedes descargar un archivo `.json` de backup en cualquier momento pulsando **📥 Exportar JSON**.
-  - Puedes restaurar puntajes previos en el panel de administración.
-- **Seguridad y Vaciado de Lista**:
-  - Se puede vaciar la lista desde el botón **🔒 Vaciar Lista** en el juego (solicita la clave de administrador).
-  - O bien desde el archivo dedicado [**`admin.html`**](admin.html).
-  - **Clave de Administrador por Defecto**: `1234` (se puede cambiar desde `admin.html`).
+### 2. 🌊 Flow Free ([`flow.html`](flow.html))
+- Inspirado en Numberlink y [puzzle.now/flow](https://puzzle.now/flow/).
+- **Objetivo**: Conectar los pares de puntos del mismo color mediante tuberías de neón continuas, sin que las líneas se crucen, y **cubriendo el 100% de las casillas** del tablero.
+- **Modos de Cuadrícula**:
+  - **5x5** (Fácil / Inicio)
+  - **6x6** (Intermedio)
+  - **7x7** (Avanzado)
+  - **8x8** (Desafío Experto)
+- **Controles Táctiles y de Ratón**: Arrastre ultrasuave, desandado automático al retroceder y corte automático al chocar.
+- **Sonidos Pentatónicos**: Cada color reproduce su propia nota musical armónica al trazar y conectar.
+- **Niveles prediseñados + Generador Aleatorio Infinito (🎲)**.
 
 ---
 
-## ✨ Características Técnicas
+## 🏆 Tablas de Puntajes y Jugadores (JSON)
 
-- **100% Soluble Garantizado**: Generación a partir del estado apagado aplicando secuencias de movimientos aleatorios válidos. ¡Nunca un nivel imposible!
-- **Botón de Pista Inteligente (💡 Pista)**: Resolvedor Gaussiano exacto sobre el cuerpo finito $\mathbb{F}_2$ (GF(2)) que calcula en menos de 1 milisegundo el siguiente movimiento óptimo.
-- **Sonidos Sintetizados (Web Audio API)**: Tonos y fanfarria al ganar generados por código mediante osciladores, **sin archivos de audio externos**.
-- **Cero Dependencias**: No requiere internet, CDNs ni librerías pesadas. Ocupa solo ~35 KB.
+- Ambos juegos incluyen guardado de récords con nombre del jugador y tiempo en formato estándar **JSON**.
+- Botón **📥 Exportar JSON** para descargar copias de seguridad de las partidas en cualquier momento.
+- Panel de control unificado [**`admin.html`**](admin.html) protegido por PIN (clave por defecto: **`1234`**) para ver el JSON en tiempo real, descargar backups, restaurar o vaciar los puntajes con un solo clic.
 
 ---
 
-## 🌐 Cómo Subirlo a GitHub y Activar GitHub Pages
+## 🌐 Cómo Jugar en GitHub Pages (Online y Gratis)
 
-¡Sí! Este proyecto está 100% listo para subirse a GitHub y jugarse online gratis.
-
-### Pasos:
-
-1. **Crear repositorio en GitHub**:
-   - Entra a [github.com/new](https://github.com/new) y crea un nuevo repositorio (ej: `lights-out-juego`).
-2. **Subir los archivos desde tu computadora**:
-   Abre una terminal (PowerShell o Git Bash) en esta carpeta y ejecuta:
-   ```bash
-   git init
-   git add .
-   git commit -m "Versión inicial de Lights Out con niveles, ranking JSON y soporte ESP32"
-   git branch -M main
-   git remote add origin https://github.com/TU_USUARIO/TU_REPOSITORIO.git
-   git push -u origin main
-   ```
-3. **Activar GitHub Pages (Web gratuita online)**:
-   - En tu repositorio de GitHub, ve a **Settings** > **Pages** (en el menú lateral izquierdo).
-   - En **Build and deployment > Source**, selecciona **Deploy from a branch**.
-   - En **Branch**, elige `main` y la carpeta `/(root)`.
-   - Haz clic en **Save**.
-4. ¡Listo! En 1 minuto tendrás tu enlace público tipo:
-   `https://TU_USUARIO.github.io/TU_REPOSITORIO/` para compartir y jugar desde cualquier parte del mundo.
+1. En tu repositorio de GitHub ([github.com/daro028/lights-out](https://github.com/daro028/lights-out)):
+2. Ve a **Settings** > **Pages**.
+3. En **Branch**, selecciona `main` y la carpeta `/(root)`, luego haz clic en **Save**.
+4. En 1 minuto tendrás acceso a:
+   - **Lights Out**: `https://daro028.github.io/lights-out/`
+   - **Flow**: `https://daro028.github.io/lights-out/flow.html`
+   - **Admin**: `https://daro028.github.io/lights-out/admin.html`
 
 ---
 
 ## ⚡ Servidor en ESP32-C3 / ESP32-S3
 
-Tanto el ESP32-C3 como el ESP32-S3 incluyen Wi-Fi y memoria Flash suficiente para alojar el juego y guardar el archivo `scores.json` en **LittleFS**, permitiendo que varios jugadores conectados a la red del ESP32 compartan la misma tabla de posiciones.
-
-### Pasos en Arduino IDE:
-1. Abre `esp32_lightsout.ino`.
-2. En **Herramientas > Placa**, selecciona tu modelo (ej. `ESP32C3 Dev Module` o `ESP32S3 Dev Module`).
-3. Conecta por USB y haz clic en **Subir**.
-4. El ESP32 creará la red Wi-Fi `LightsOut-Game`.
+1. Abre `esp32_lightsout.ino` en **Arduino IDE**.
+2. Selecciona tu placa (ej. *ESP32C3 Dev Module* o *ESP32S3 Dev Module*).
+3. Sube el código mediante USB.
+4. El ESP32 creará la red Wi-Fi: **`Juegos-Fatima`**.
 5. Conéctate con tu celular o PC y abre:
-   - **Juego**: `http://192.168.4.1/` o `http://lightsout.local/`
-   - **Panel Admin**: `http://192.168.4.1/admin.html`
+   - `http://192.168.4.1/` (Lights Out)
+   - `http://192.168.4.1/flow.html` (Flow Free)
+   - `http://192.168.4.1/admin.html` (Panel Admin)
 
 ---
 
 ## 🍓 Servidor en Raspberry Pi 4
 
-### Opción Rápida con Python (1 línea):
+### Comando rápido en Python:
 ```bash
 python3 -m http.server 8080 --directory "Juegos Fatima"
 ```
-Acceso desde la red local: `http://IP_DE_TU_RASPBERRY:8080`.
-
-### Opción Permanente con Nginx:
-```bash
-sudo apt update && sudo apt install -y nginx
-sudo cp index.html admin.html /var/www/html/
-```
-Acceso directo: `http://IP_DE_TU_RASPBERRY/`.
+Acceso en red local: `http://IP_DE_TU_RASPBERRY:8080`.
 
 ---
 
-## 📁 Estructura de Archivos
+## 📁 Estructura del Proyecto
 
 ```
 Juegos Fatima/
 │
-├── index.html            # Juego principal + Tabla de puntajes + Exportador JSON
-├── admin.html            # Panel de control de administrador protegido por PIN
-├── esp32_lightsout.ino   # Firmware Arduino para ESP32-C3 / ESP32-S3 (LittleFS + WebServer)
-├── index_html.h          # Header C++ con index.html embebido en Flash
-├── admin_html.h          # Header C++ con admin.html embebido en Flash
-├── .gitignore            # Archivos temporales ignorados para Git
-└── README.md             # Documentación completa
+├── index.html            # Juego: Lights Out (con selector de juegos y ranking)
+├── flow.html             # Juego: Flow Free (canvas neón, táctil, niveles 5x5 a 8x8)
+├── admin.html            # Panel de Administración para ambos juegos (protegido por PIN)
+├── esp32_lightsout.ino   # Firmware Arduino para ESP32-C3 / ESP32-S3 con LittleFS
+├── index_html.h          # Header C++ con index.html embebido
+├── flow_html.h           # Header C++ con flow.html embebido
+├── admin_html.h          # Header C++ con admin.html embebido
+├── .gitignore            # Exclusiones para Git
+└── README.md             # Documentación del proyecto
 ```

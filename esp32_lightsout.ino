@@ -1,18 +1,17 @@
 /*
- * Lights Out - Servidor Web para ESP32-C3 / ESP32-S3
+ * Arcade Micro - Servidor Web para ESP32-C3 / ESP32-S3
+ * Juegos incluidos:
+ * 1. Lights Out (index.html)
+ * 2. Flow Free  (flow.html)
+ * 3. Panel Admin (admin.html)
  * 
  * Funcionalidad:
- * 1. Crea su propia red Wi-Fi (Punto de Acceso): "LightsOut-Game"
- * 2. Al conectarte desde celular, tablet o PC, abres tu navegador en:
- *    http://192.168.4.1  o  http://lightsout.local
- * 3. Sirve el juego (index.html) y el panel de administración (admin.html)
- * 4. Almacena y sincroniza la tabla de puntajes en memoria Flash (LittleFS)
- *    para que todos los jugadores compartan el mismo ranking en tiempo real.
- * 
- * Compatible con:
- * - ESP32-C3 (SuperMini, DevKit, etc.)
- * - ESP32-S3 (DevKitC, Zero, etc.)
- * - ESP32 clásico (WROOM / WROVER)
+ * - Crea su propia red Wi-Fi: "Juegos-Fatima"
+ * - Acceso directo desde cualquier dispositivo en:
+ *   http://192.168.4.1/  (Lights Out)
+ *   http://192.168.4.1/flow.html (Flow Free)
+ *   http://192.168.4.1/admin.html (Admin)
+ * - LittleFS para almacenamiento de puntajes en Flash.
  */
 
 #include <WiFi.h>
@@ -22,19 +21,14 @@
 #include <LittleFS.h>
 
 // ================= CONFIGURACIÓN DE RED =================
-// true: Crea su propia red Wi-Fi (no necesitas router ni internet)
-// false: Se conecta al Wi-Fi de tu casa
 const bool MODO_PUNTO_DE_ACCESO = true;
 
-// Datos si MODO_PUNTO_DE_ACCESO = true
-const char* AP_SSID = "LightsOut-Game";
-const char* AP_PASS = ""; // Dejar vacío para red abierta, o mínimo 8 caracteres
+const char* AP_SSID = "Juegos-Fatima";
+const char* AP_PASS = ""; // Red abierta
 
-// Datos si MODO_PUNTO_DE_ACCESO = false
 const char* WIFI_SSID = "TU_WIFI_AQUI";
 const char* WIFI_PASS = "TU_CONTRASENA_AQUI";
 
-// Clave de administrador para vaciado remoto
 const String ADMIN_PIN = "1234";
 
 // ================= SERVIDORES =================
@@ -42,8 +36,9 @@ WebServer server(80);
 DNSServer dnsServer;
 const byte DNS_PORT = 53;
 
-// Declaración de archivos HTML embebidos
+// Declaración de archivos HTML embebidos en PROGMEM
 extern const char INDEX_HTML[] PROGMEM;
+extern const char FLOW_HTML[] PROGMEM;
 extern const char ADMIN_HTML[] PROGMEM;
 
 const char* SCORES_FILE = "/scores.json";
@@ -51,6 +46,10 @@ const char* SCORES_FILE = "/scores.json";
 // ================= RUTAS HTTP =================
 void handleRoot() {
   server.send_P(200, "text/html", INDEX_HTML);
+}
+
+void handleFlow() {
+  server.send_P(200, "text/html", FLOW_HTML);
 }
 
 void handleAdmin() {
@@ -107,9 +106,8 @@ void handleNotFound() {
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  Serial.println("\n--- Iniciando Lights Out Server con LittleFS ---");
+  Serial.println("\n--- Iniciando Servidor de Juegos Fatima (ESP32) ---");
 
-  // Iniciar sistema de archivos LittleFS (formatea si es la primera vez)
   if (!LittleFS.begin(true)) {
     Serial.println("Error al montar LittleFS");
   } else {
@@ -125,7 +123,7 @@ void setup() {
     }
 
     IPAddress IP = WiFi.softAPIP();
-    Serial.print("Punto de Acceso iniciado: ");
+    Serial.print("Punto de Acceso: ");
     Serial.println(AP_SSID);
     Serial.print("Direccion IP: http://");
     Serial.println(IP);
@@ -140,22 +138,23 @@ void setup() {
       Serial.print(".");
     }
     Serial.println("\nConectado!");
-    Serial.print("Direccion IP: http://");
+    Serial.print("IP Local: http://");
     Serial.println(WiFi.localIP());
   }
 
-  // mDNS (http://lightsout.local)
-  if (MDNS.begin("lightsout")) {
-    Serial.println("mDNS iniciado: http://lightsout.local");
+  if (MDNS.begin("juegos")) {
+    Serial.println("mDNS iniciado: http://juegos.local");
   }
 
-  // Rutas del juego y administración
+  // Rutas de Juegos
   server.on("/", HTTP_GET, handleRoot);
   server.on("/index.html", HTTP_GET, handleRoot);
+  server.on("/flow", HTTP_GET, handleFlow);
+  server.on("/flow.html", HTTP_GET, handleFlow);
   server.on("/admin", HTTP_GET, handleAdmin);
   server.on("/admin.html", HTTP_GET, handleAdmin);
 
-  // API REST para puntajes en JSON
+  // API REST para puntajes
   server.on("/api/scores", HTTP_GET, handleGetScores);
   server.on("/api/scores", HTTP_POST, handlePostScores);
   server.on("/api/scores/clear", HTTP_POST, handleClearScores);
@@ -174,6 +173,7 @@ void loop() {
   delay(2);
 }
 
-// Inclusión de páginas web compiladas en flash PROGMEM
+// Carga de archivos HTML compilados en Flash
 #include "index_html.h"
+#include "flow_html.h"
 #include "admin_html.h"
