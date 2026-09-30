@@ -1,16 +1,18 @@
 /*
  * Arcade Micro - Servidor Web para ESP32-C3 / ESP32-S3
  * Juegos incluidos:
- * 1. Lights Out (index.html)
- * 2. Flow Free  (flow.html)
- * 3. Panel Admin (admin.html)
+ * 1. Portal / Hub de Juegos (index.html)
+ * 2. Lights Out (lights-out.html)
+ * 3. Flow Free  (flow.html)
+ * 4. Panel Admin (admin.html)
  * 
  * Funcionalidad:
  * - Crea su propia red Wi-Fi: "Juegos-Fatima"
  * - Acceso directo desde cualquier dispositivo en:
- *   http://192.168.4.1/  (Lights Out)
- *   http://192.168.4.1/flow.html (Flow Free)
- *   http://192.168.4.1/admin.html (Admin)
+ *   http://192.168.4.1/              (Portal Principal)
+ *   http://192.168.4.1/lights-out.html (Lights Out)
+ *   http://192.168.4.1/flow.html       (Flow Free)
+ *   http://192.168.4.1/admin.html      (Admin)
  * - LittleFS para almacenamiento de puntajes en Flash.
  */
 
@@ -38,6 +40,7 @@ const byte DNS_PORT = 53;
 
 // Declaración de archivos HTML embebidos en PROGMEM
 extern const char INDEX_HTML[] PROGMEM;
+extern const char LIGHTS_OUT_HTML[] PROGMEM;
 extern const char FLOW_HTML[] PROGMEM;
 extern const char ADMIN_HTML[] PROGMEM;
 
@@ -46,6 +49,10 @@ const char* SCORES_FILE = "/scores.json";
 // ================= RUTAS HTTP =================
 void handleRoot() {
   server.send_P(200, "text/html", INDEX_HTML);
+}
+
+void handleLightsOut() {
+  server.send_P(200, "text/html", LIGHTS_OUT_HTML);
 }
 
 void handleFlow() {
@@ -106,7 +113,7 @@ void handleNotFound() {
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  Serial.println("\n--- Iniciando Servidor de Juegos Fatima (ESP32) ---");
+  Serial.println("\n--- Iniciando Servidor Fátima Games (ESP32) ---");
 
   if (!LittleFS.begin(true)) {
     Serial.println("Error al montar LittleFS");
@@ -146,9 +153,11 @@ void setup() {
     Serial.println("mDNS iniciado: http://juegos.local");
   }
 
-  // Rutas de Juegos
+  // Rutas del Portal y Juegos
   server.on("/", HTTP_GET, handleRoot);
   server.on("/index.html", HTTP_GET, handleRoot);
+  server.on("/lights-out", HTTP_GET, handleLightsOut);
+  server.on("/lights-out.html", HTTP_GET, handleLightsOut);
   server.on("/flow", HTTP_GET, handleFlow);
   server.on("/flow.html", HTTP_GET, handleFlow);
   server.on("/admin", HTTP_GET, handleAdmin);
@@ -175,5 +184,6 @@ void loop() {
 
 // Carga de archivos HTML compilados en Flash
 #include "index_html.h"
+#include "lights_out_html.h"
 #include "flow_html.h"
 #include "admin_html.h"

@@ -1,0 +1,1525 @@
+const char LIGHTS_OUT_HTML[] PROGMEM = R"rawliteral(
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lights Out - Desafío de Luces</title>
+  <style>
+    :root {
+      --bg-main: #0a0e17;
+      --bg-panel: rgba(22, 32, 50, 0.75);
+      --border-panel: rgba(255, 255, 255, 0.08);
+      --accent: #00f2fe;
+      --accent-glow: rgba(0, 242, 254, 0.4);
+      --light-on: #ffd166;
+      --light-on-glow: rgba(255, 209, 102, 0.65);
+      --light-on-core: #fff7d6;
+      --light-off: #162032;
+      --light-off-border: #2a3b5c;
+      --light-off-inner: #0f172a;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --btn-bg: #1e293b;
+      --btn-hover: #334155;
+      --btn-active: #475569;
+      --success: #06d6a0;
+      --danger: #ef4444;
+      --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      background-image: 
+        radial-gradient(circle at 50% 10%, rgba(0, 242, 254, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 80% 90%, rgba(255, 209, 102, 0.05) 0%, transparent 50%),
+        linear-gradient(180deg, #070a10 0%, #0d1424 100%);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    /* HEADER */
+    header {
+      text-align: center;
+      width: 100%;
+    }
+
+    .title-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 5vw, 2.4rem);
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #ffffff 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 25px var(--accent-glow);
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      letter-spacing: 0.5px;
+    }
+
+    /* MODE SELECTOR */
+    .mode-selector {
+      display: flex;
+      background: var(--bg-panel);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border-panel);
+      backdrop-filter: blur(10px);
+      width: 100%;
+      gap: 4px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 8px 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .mode-btn span.badge {
+      font-size: 0.7rem;
+      opacity: 0.7;
+    }
+
+    .mode-btn.active {
+      background: var(--accent);
+      color: #070a12;
+      box-shadow: 0 2px 10px var(--accent-glow);
+    }
+
+    .mode-btn.active span.badge {
+      opacity: 0.9;
+      font-weight: 700;
+    }
+
+    /* STATS BAR */
+    .stats-bar {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      background: var(--bg-panel);
+      padding: 10px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--border-panel);
+      backdrop-filter: blur(8px);
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+
+    .stat-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* BOARD WRAPPER */
+    .board-container {
+      background: var(--bg-panel);
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border-panel);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .board {
+      display: grid;
+      gap: 12px;
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Specific layouts */
+    .board.mode-1x5 {
+      grid-template-columns: repeat(5, 1fr);
+      max-width: 400px;
+      padding: 20px 0;
+    }
+
+    .board.mode-3x3 {
+      grid-template-columns: repeat(3, 1fr);
+      max-width: 360px;
+    }
+
+    .board.mode-5x5 {
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      max-width: 400px;
+    }
+
+    /* LIGHT TILES */
+    .tile {
+      aspect-ratio: 1;
+      border-radius: 12px;
+      cursor: pointer;
+      position: relative;
+      outline: none;
+      border: none;
+      transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .tile:active {
+      transform: scale(0.92);
+    }
+
+    /* OFF STATE */
+    .tile.off {
+      background: radial-gradient(circle at 35% 35%, #223049, var(--light-off-inner));
+      border: 2px solid var(--light-off-border);
+      box-shadow: 
+        inset 0 2px 4px rgba(255, 255, 255, 0.06),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.6),
+        0 3px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .tile.off::after {
+      content: '';
+      position: absolute;
+      inset: 25%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.04) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ON STATE */
+    .tile.on {
+      background: radial-gradient(circle at 45% 45%, var(--light-on-core) 0%, var(--light-on) 60%, #e08c00 100%);
+      border: 2px solid #fff2a8;
+      box-shadow: 
+        0 0 16px var(--light-on-glow),
+        0 0 32px var(--light-on-glow),
+        inset 0 2px 4px rgba(255, 255, 255, 0.8),
+        inset 0 -2px 6px rgba(180, 80, 0, 0.5);
+      animation: pulse-glow 2.5s infinite alternate ease-in-out;
+    }
+
+    @keyframes pulse-glow {
+      0% {
+        box-shadow: 
+          0 0 14px var(--light-on-glow),
+          0 0 26px var(--light-on-glow),
+          inset 0 2px 4px rgba(255, 255, 255, 0.7);
+      }
+      100% {
+        box-shadow: 
+          0 0 20px var(--light-on-glow),
+          0 0 38px var(--light-on-glow),
+          inset 0 2px 6px rgba(255, 255, 255, 0.9);
+      }
+    }
+
+    /* HINT HIGHLIGHT */
+    .tile.hint {
+      animation: hint-pulse 1s infinite alternate ease-in-out;
+    }
+
+    @keyframes hint-pulse {
+      0% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 8px #00f2fe);
+      }
+      100% {
+        transform: scale(1.08);
+        filter: drop-shadow(0 0 18px #00f2fe);
+      }
+    }
+
+    /* ACTION CONTROLS */
+    .actions-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .btn {
+      background: var(--btn-bg);
+      border: 1px solid var(--border-panel);
+      color: var(--text-main);
+      padding: 9px 13px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background: var(--btn-hover);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+      background: var(--btn-active);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+      color: #ffffff;
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 114, 255, 0.3);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 4px 18px rgba(0, 114, 255, 0.5);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #ffd166 0%, #f39c12 100%);
+      color: #0b0f19;
+      border: none;
+      font-weight: 700;
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-icon-only {
+      padding: 9px 11px;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #111827;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 22px;
+      width: 100%;
+      max-width: 440px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 242, 254, 0.15);
+      transform: translateY(20px) scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-overlay.open .modal-card {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #ffd166;
+      margin-bottom: 6px;
+    }
+
+    .modal-desc {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .modal-stats {
+      background: #1f293d;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .modal-stat-val {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #00f2fe;
+    }
+
+    .modal-stat-lbl {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    /* INPUT DE NOMBRE */
+    .player-input-box {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .player-input-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      display: block;
+      text-transform: uppercase;
+    }
+
+    .player-input-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .player-input {
+      flex: 1;
+      background: #1e293b;
+      border: 1px solid var(--border-panel);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .player-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    /* TABLA DE POSICIONES */
+    .leaderboard-filters {
+      display: flex;
+      gap: 4px;
+      background: #1a2336;
+      padding: 3px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .filter-btn {
+      flex: 1;
+      padding: 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .filter-btn.active {
+      background: var(--accent);
+      color: #070a12;
+      font-weight: 700;
+    }
+
+    .leaderboard-table-wrapper {
+      flex: 1;
+      overflow-y: auto;
+      max-height: 280px;
+      background: #141d2e;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      margin-bottom: 14px;
+    }
+
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      text-align: left;
+    }
+
+    .leaderboard-table th {
+      background: #1a253a;
+      padding: 8px 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.68rem;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .leaderboard-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: #cbd5e1;
+    }
+
+    .leaderboard-table tr:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .rank-cell {
+      font-weight: 700;
+      width: 36px;
+      text-align: center;
+    }
+
+    .rank-1 { color: #ffd166; font-size: 0.95rem; }
+    .rank-2 { color: #cbd5e1; font-size: 0.95rem; }
+    .rank-3 { color: #cd7f32; font-size: 0.95rem; }
+
+    .modal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    /* CONFETTI CANVAS */
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 99;
+    }
+
+    /* FOOTER */
+    footer {
+      margin-top: 6px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      opacity: 0.85;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* HELP CARD */
+    .rules-box {
+      font-size: 0.8rem;
+      line-height: 1.4;
+      text-align: left;
+      background: #172033;
+      padding: 14px;
+      border-radius: 10px;
+      margin: 12px 0 16px 0;
+      color: #cbd5e1;
+    }
+
+    .rules-box ul {
+      padding-left: 18px;
+      margin-top: 6px;
+    }
+
+    .rules-box li {
+      margin-bottom: 4px;
+    }
+
+    /* TOAST NOTIFICATION */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      background: #1e293b;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 20px;
+      border: 1px solid var(--accent);
+      font-size: 0.82rem;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+      z-index: 200;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confetti-canvas"></canvas>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="nav-bar-games" style="display: flex; gap: 8px; margin-bottom: 4px;">
+        <a href="index.html" class="nav-link" style="color: var(--text-muted); text-decoration: none; font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-panel); background: rgba(255, 255, 255, 0.03);">🏠 Inicio</a>
+        <a href="lights-out.html" class="nav-link active" style="color: #fff; text-decoration: none; font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--accent); background: rgba(0, 242, 254, 0.15);">💡 Lights Out</a>
+        <a href="flow.html" class="nav-link" style="color: var(--text-muted); text-decoration: none; font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-panel); background: rgba(255, 255, 255, 0.03);">🌊 Flow (Líneas)</a>
+        <a href="admin.html" class="nav-link" style="color: var(--text-muted); text-decoration: none; font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-panel); background: rgba(255, 255, 255, 0.03);">⚙️ Admin</a>
+      </div>
+      <div class="title-wrapper">
+        <h1>Lights Out</h1>
+      </div>
+      <p class="subtitle">¡Apaga todas las luces para ganar!</p>
+    </header>
+
+    <!-- Selector de Nivel / Modo -->
+    <nav class="mode-selector" aria-label="Seleccionar modo de juego">
+      <button class="mode-btn" data-mode="1x5" onclick="setMode('1x5')">
+        Línea
+        <span class="badge">1x5 (5 Luces)</span>
+      </button>
+      <button class="mode-btn active" data-mode="3x3" onclick="setMode('3x3')">
+        Matriz
+        <span class="badge">3x3 (9 Luces)</span>
+      </button>
+      <button class="mode-btn" data-mode="5x5" onclick="setMode('5x5')">
+        Clásico
+        <span class="badge">5x5 (25 Luces)</span>
+      </button>
+    </nav>
+
+    <!-- Barra de Estado -->
+    <section class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-label">Movimientos</span>
+        <span class="stat-value" id="moves-count">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Tiempo</span>
+        <span class="stat-value" id="timer">00:00</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Mejor Récord</span>
+        <span class="stat-value" id="best-score">-</span>
+      </div>
+    </section>
+
+    <!-- Tablero de Juego -->
+    <main class="board-container">
+      <div id="board" class="board mode-3x3" role="grid" aria-label="Tablero de luces"></div>
+    </main>
+
+    <!-- Barra de Controles y Herramientas -->
+    <section class="actions-bar">
+      <button class="btn btn-primary" onclick="startNewGame()" title="Generar nuevo acertijo">
+        ✨ Nuevo
+      </button>
+      <button class="btn" onclick="restartCurrentGame()" title="Reiniciar este mismo nivel">
+        ↺ Reiniciar
+      </button>
+      <button class="btn" id="hint-btn" onclick="requestHint()" title="Mostrar una pista del siguiente movimiento">
+        💡 Pista
+      </button>
+      <button class="btn btn-gold" onclick="openLeaderboardModal()" title="Ver tabla de puntajes">
+        🏆 Puntajes
+      </button>
+      <button class="btn btn-icon-only" id="mute-btn" onclick="toggleAudio()" title="Silenciar o activar sonidos">
+        🔊
+      </button>
+      <button class="btn btn-icon-only" onclick="showHelpModal()" title="Instrucciones">
+        ❓
+      </button>
+    </section>
+
+    <!-- Pie de página -->
+    <footer>
+      <span>ESP32 / Raspberry Pi / Web Ready</span>
+      <span>·</span>
+      <a href="admin.html" title="Panel de Administración para gestionar o vaciar puntajes">⚙️ Admin</a>
+    </footer>
+  </div>
+
+  <!-- MODAL DE VICTORIA -->
+  <div class="modal-overlay" id="win-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div style="font-size: 2.5rem; margin-bottom: 4px;">🎉</div>
+      <h2 class="modal-title">¡Completado!</h2>
+      <p class="modal-desc" id="win-message">Has apagado todas las luces con éxito.</p>
+      
+      <div class="modal-stats">
+        <div>
+          <div class="modal-stat-val" id="win-moves">0</div>
+          <div class="modal-stat-lbl">Movimientos</div>
+        </div>
+        <div>
+          <div class="modal-stat-val" id="win-time">00:00</div>
+          <div class="modal-stat-lbl">Tiempo</div>
+        </div>
+      </div>
+
+      <!-- Registro de Nombre para el Leaderboard -->
+      <div class="player-input-box" id="save-score-section">
+        <label class="player-input-label" for="player-name-input">Tu Nombre para la Tabla:</label>
+        <div class="player-input-row">
+          <input type="text" id="player-name-input" class="player-input" placeholder="Jugador 1" maxlength="15">
+          <button class="btn btn-primary" id="save-score-btn" onclick="submitPlayerScore()">Guardar</button>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="closeWinModal(); nextLevel();">
+          Siguiente Nivel ➔
+        </button>
+        <button class="btn" onclick="closeWinModal(); startNewGame();">
+          Jugar de Nuevo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL TABLA DE POSICIONES (LEADERBOARD) -->
+  <div class="modal-overlay" id="leaderboard-modal" role="dialog" aria-modal="true">
+    <div class="modal-card" style="max-width: 480px;">
+      <h2 class="modal-title" style="color: #ffd166;">🏆 Tabla de Puntajes</h2>
+      <p class="modal-desc">Mejores partidas guardadas (ordenadas por movimientos y tiempo)</p>
+
+      <!-- Filtros por Modo -->
+      <div class="leaderboard-filters">
+        <button class="filter-btn active" onclick="filterLeaderboard('all', this)">Todos</button>
+        <button class="filter-btn" onclick="filterLeaderboard('1x5', this)">1x5</button>
+        <button class="filter-btn" onclick="filterLeaderboard('3x3', this)">3x3</button>
+        <button class="filter-btn" onclick="filterLeaderboard('5x5', this)">5x5</button>
+      </div>
+
+      <!-- Tabla con Scroll -->
+      <div class="leaderboard-table-wrapper">
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th style="text-align: center;">#</th>
+              <th>Jugador</th>
+              <th>Modo</th>
+              <th>Movs</th>
+              <th>Tiempo</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-body">
+            <!-- Rellenado dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Botones de Gestión (JSON y Clave Admin) -->
+      <div class="modal-actions">
+        <button class="btn" onclick="exportScoresJSON()" title="Descargar la tabla en archivo .json">
+          📥 Exportar JSON
+        </button>
+        <button class="btn btn-danger" onclick="promptClearScores()" title="Vaciar la lista con clave de administrador">
+          🔒 Vaciar Lista
+        </button>
+        <button class="btn btn-primary" onclick="closeLeaderboardModal()">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE AYUDA / REGLAS -->
+  <div class="modal-overlay" id="help-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h2 class="modal-title" style="color: #00f2fe;">¿Cómo se Juega?</h2>
+      <div class="rules-box">
+        <strong>Objetivo:</strong> Apagar todas las luces del tablero.
+        <ul>
+          <li>Tocar cualquier botón conmuta (prende o apaga) su luz.</li>
+          <li>Además, conmuta automáticamente a sus <strong>vecinas directas</strong> (arriba, abajo, izquierda y derecha). En la línea 1x5 conmuta a las contiguas.</li>
+          <li>¡Cada rompecabezas generado tiene solución matemática garantizada!</li>
+          <li>Si te trabas, usa <strong>💡 Pista</strong> para ver un movimiento óptimo.</li>
+          <li>Guarda tu nombre al terminar para rankear en la <strong>🏆 Tabla de Puntajes</strong>.</li>
+        </ul>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="closeHelpModal()">
+          ¡Entendido, a jugar!
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notificación Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    /* =========================================================================
+       CONFIGURACIÓN Y ESTADO DEL JUEGO
+       ========================================================================= */
+    const MODES = {
+      '1x5': { rows: 1, cols: 5, scrambleMoves: 4, name: '1x5 Línea' },
+      '3x3': { rows: 3, cols: 3, scrambleMoves: 7, name: '3x3 Matriz' },
+      '5x5': { rows: 5, cols: 5, scrambleMoves: 14, name: '5x5 Clásico' }
+    };
+
+    // Clave de Administrador para vaciar la lista (configurable)
+    const ADMIN_KEY_DEFAULT = "1234";
+
+    let currentMode = '3x3';
+    let rows = 3;
+    let cols = 3;
+    let grid = [];
+    let initialScramble = [];
+    let moves = 0;
+    let timerSeconds = 0;
+    let timerInterval = null;
+    let isGameActive = false;
+    let soundEnabled = true;
+    let audioCtx = null;
+    let currentFilterMode = 'all';
+
+    /* =========================================================================
+       AUDIO SINTETIZADO (Web Audio API - Cero dependencias externas)
+       ========================================================================= */
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) audioCtx = new AudioContextClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.08, gainVal = 0.15) {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function playClickSound(isOn) {
+      if (isOn) playTone(520, 'triangle', 0.07, 0.18);
+      else playTone(340, 'sine', 0.07, 0.15);
+    }
+
+    function playWinSound() {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const notes = [440, 554.37, 659.25, 880];
+      notes.forEach((freq, idx) => {
+        setTimeout(() => {
+          playTone(freq, 'triangle', 0.35, 0.25);
+        }, idx * 110);
+      });
+    }
+
+    function toggleAudio() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('mute-btn');
+      btn.textContent = soundEnabled ? '🔊' : '🔇';
+      showToast(soundEnabled ? "Sonido activado" : "Sonido silenciado");
+    }
+
+    /* =========================================================================
+       CRONÓMETRO Y ESTADÍSTICAS
+       ========================================================================= */
+    function startTimer() {
+      stopTimer();
+      timerSeconds = 0;
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        timerSeconds++;
+        updateTimerDisplay();
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function formatTime(totalSec) {
+      const mins = Math.floor(totalSec / 60);
+      const secs = totalSec % 60;
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function updateTimerDisplay() {
+      document.getElementById('timer').textContent = formatTime(timerSeconds);
+    }
+
+    function updateMovesDisplay() {
+      document.getElementById('moves-count').textContent = moves;
+    }
+
+    function loadBestScore() {
+      const best = localStorage.getItem(`lightsout_best_${currentMode}`);
+      const elem = document.getElementById('best-score');
+      if (best) {
+        const data = JSON.parse(best);
+        elem.textContent = `${data.moves}m · ${formatTime(data.time)}`;
+      } else {
+        elem.textContent = '-';
+      }
+    }
+
+    function saveBestScore() {
+      const key = `lightsout_best_${currentMode}`;
+      const best = localStorage.getItem(key);
+      let isNewRecord = false;
+
+      if (!best) {
+        isNewRecord = true;
+      } else {
+        const data = JSON.parse(best);
+        if (moves < data.moves || (moves === data.moves && timerSeconds < data.time)) {
+          isNewRecord = true;
+        }
+      }
+
+      if (isNewRecord) {
+        localStorage.setItem(key, JSON.stringify({ moves, time: timerSeconds }));
+        loadBestScore();
+      }
+      return isNewRecord;
+    }
+
+    /* =========================================================================
+       GESTIÓN DE TABLA DE PUNTAJES (JSON & LOCALSTORAGE & API SYNC)
+       ========================================================================= */
+    const SCORES_STORAGE_KEY = 'lightsout_scores_json';
+
+    // Obtener lista completa de puntajes en formato JSON
+    function getStoredScores() {
+      try {
+        const raw = localStorage.getItem(SCORES_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    // Guardar lista en localStorage y si hay endpoint de ESP32/Raspberry Pi, sincronizar
+    function saveScoresList(scoresArray) {
+      localStorage.setItem(SCORES_STORAGE_KEY, JSON.stringify(scoresArray));
+      
+      // Intentar enviar al backend si está corriendo en ESP32 o servidor con API
+      if (window.location.protocol.startsWith('http')) {
+        fetch('/api/scores', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(scoresArray)
+        }).catch(() => {
+          // Si no hay backend (ej: GitHub Pages o local), se mantiene en localStorage sin error
+        });
+      }
+    }
+
+    // Registrar nuevo puntaje
+    function registerScore(playerName, mode, movesCount, timeSec) {
+      const scores = getStoredScores();
+      const newEntry = {
+        id: 'score_' + Date.now(),
+        player: (playerName || 'Jugador').trim().slice(0, 15),
+        mode: mode,
+        moves: movesCount,
+        time: timeSec,
+        date: new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+      };
+
+      scores.push(newEntry);
+      saveScoresList(scores);
+      return newEntry;
+    }
+
+    function submitPlayerScore() {
+      const input = document.getElementById('player-name-input');
+      const name = input.value.trim() || 'Jugador 1';
+      localStorage.setItem('lightsout_last_player_name', name);
+
+      registerScore(name, currentMode, moves, timerSeconds);
+      
+      const btn = document.getElementById('save-score-btn');
+      btn.textContent = '¡Guardado!';
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+
+      showToast(`¡Puntaje de ${name} registrado!`);
+    }
+
+    // Renderizar la tabla de posiciones con filtros
+    function renderLeaderboardTable() {
+      const tbody = document.getElementById('leaderboard-body');
+      tbody.innerHTML = '';
+
+      let scores = getStoredScores();
+
+      if (currentFilterMode !== 'all') {
+        scores = scores.filter(s => s.mode === currentFilterMode);
+      }
+
+      // Ordenar: primero menos movimientos, en caso de empate menor tiempo
+      scores.sort((a, b) => {
+        if (a.moves !== b.moves) return a.moves - b.moves;
+        return a.time - b.time;
+      });
+
+      if (scores.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 20px; color: var(--text-muted);">No hay partidas registradas aún</td></tr>`;
+        return;
+      }
+
+      scores.forEach((s, idx) => {
+        const tr = document.createElement('tr');
+        let rankBadge = `${idx + 1}°`;
+        let rankClass = '';
+        if (idx === 0) { rankBadge = '🥇'; rankClass = 'rank-1'; }
+        else if (idx === 1) { rankBadge = '🥈'; rankClass = 'rank-2'; }
+        else if (idx === 2) { rankBadge = '🥉'; rankClass = 'rank-3'; }
+
+        tr.innerHTML = `
+          <td class="rank-cell ${rankClass}">${rankBadge}</td>
+          <td style="font-weight: 600; color: #fff;">${escapeHtml(s.player)}</td>
+          <td><span style="font-size:0.75rem; background:#1e293b; padding:2px 6px; border-radius:4px;">${s.mode}</span></td>
+          <td style="font-weight:700; color: #00f2fe;">${s.moves}</td>
+          <td>${formatTime(s.time)}</td>
+          <td style="font-size: 0.7rem; color: var(--text-muted);">${s.date || '-'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterLeaderboard(mode, btnElement) {
+      currentFilterMode = mode;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      if (btnElement) btnElement.classList.add('active');
+      renderLeaderboardTable();
+    }
+
+    function openLeaderboardModal() {
+      renderLeaderboardTable();
+      document.getElementById('leaderboard-modal').classList.add('open');
+    }
+
+    function closeLeaderboardModal() {
+      document.getElementById('leaderboard-modal').classList.remove('open');
+    }
+
+    // Exportar tabla a archivo .json descargable
+    function exportScoresJSON() {
+      const scores = getStoredScores();
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(scores, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `lightsout_puntajes_${new Date().toISOString().slice(0, 10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast("Descargando puntajes.json");
+    }
+
+    // Vaciar lista mediante clave de Administrador
+    function promptClearScores() {
+      const enteredPass = prompt("🔐 Ingresa la clave de administrador para vaciar la tabla de puntajes:\n(Clave por defecto: 1234)");
+      if (enteredPass === null) return; // Canceló
+
+      const storedAdminKey = localStorage.getItem('lightsout_admin_pin') || ADMIN_KEY_DEFAULT;
+
+      if (enteredPass === storedAdminKey) {
+        if (confirm("¿Estás 100% seguro de que deseas borrar todos los récords y puntajes?")) {
+          localStorage.removeItem(SCORES_STORAGE_KEY);
+          // Limpiar también mejores récords individuales
+          ['1x5', '3x3', '5x5'].forEach(m => localStorage.removeItem(`lightsout_best_${m}`));
+          loadBestScore();
+          renderLeaderboardTable();
+
+          // Sincronizar vaciado si hay servidor
+          if (window.location.protocol.startsWith('http')) {
+            fetch('/api/scores/clear?key=' + encodeURIComponent(enteredPass), { method: 'POST' }).catch(() => {});
+          }
+
+          showToast("¡Tabla de puntajes vaciada con éxito!");
+        }
+      } else {
+        alert("❌ Clave incorrecta. No se realizaron cambios.");
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2600);
+    }
+
+    /* =========================================================================
+       LÓGICA DEL JUEGO
+       ========================================================================= */
+    function setMode(modeKey) {
+      if (!MODES[modeKey]) return;
+      currentMode = modeKey;
+      rows = MODES[modeKey].rows;
+      cols = MODES[modeKey].cols;
+
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === modeKey);
+      });
+
+      const boardEl = document.getElementById('board');
+      boardEl.className = `board mode-${modeKey}`;
+
+      loadBestScore();
+      startNewGame();
+    }
+
+    function nextLevel() {
+      if (currentMode === '1x5') setMode('3x3');
+      else if (currentMode === '3x3') setMode('5x5');
+      else setMode('1x5');
+    }
+
+    function toggleCell(r, c) {
+      const deltas = [[0, 0], [-1, 0], [1, 0], [0, -1], [0, 1]];
+      deltas.forEach(([dr, dc]) => {
+        const nr = r + dr;
+        const nc = c + dc;
+        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+          grid[nr][nc] = !grid[nr][nc];
+        }
+      });
+    }
+
+    function renderBoard() {
+      const boardEl = document.getElementById('board');
+      boardEl.innerHTML = '';
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const tile = document.createElement('button');
+          tile.className = `tile ${grid[r][c] ? 'on' : 'off'}`;
+          tile.setAttribute('data-row', r);
+          tile.setAttribute('data-col', c);
+          tile.setAttribute('aria-label', `Fila ${r+1}, Columna ${c+1}: ${grid[r][c] ? 'Encendida' : 'Apagada'}`);
+          
+          tile.addEventListener('click', () => handleTileClick(r, c));
+          boardEl.appendChild(tile);
+        }
+      }
+    }
+
+    function updateTilesUI() {
+      const tiles = document.querySelectorAll('.tile');
+      tiles.forEach(tile => {
+        const r = parseInt(tile.dataset.row, 10);
+        const c = parseInt(tile.dataset.col, 10);
+        const isOn = grid[r][c];
+        tile.className = `tile ${isOn ? 'on' : 'off'}`;
+        tile.setAttribute('aria-label', `Fila ${r+1}, Columna ${c+1}: ${isOn ? 'Encendida' : 'Apagada'}`);
+      });
+    }
+
+    function handleTileClick(r, c) {
+      if (!isGameActive) return;
+
+      clearHints();
+      toggleCell(r, c);
+      moves++;
+      updateMovesDisplay();
+      updateTilesUI();
+      playClickSound(grid[r][c]);
+      checkVictory();
+    }
+
+    function checkVictory() {
+      let anyOn = false;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (grid[r][c]) {
+            anyOn = true;
+            break;
+          }
+        }
+        if (anyOn) break;
+      }
+
+      if (!anyOn) {
+        isGameActive = false;
+        stopTimer();
+        playWinSound();
+        const isNewRecord = saveBestScore();
+        showWinModal(isNewRecord);
+        launchConfetti();
+      }
+    }
+
+    function startNewGame() {
+      clearHints();
+      moves = 0;
+      updateMovesDisplay();
+      startTimer();
+      isGameActive = true;
+
+      // 1. Inicializar todas apagadas (estado resuelto base)
+      grid = Array.from({ length: rows }, () => Array(cols).fill(false));
+
+      // 2. Realizar pulsaciones aleatorias
+      const scrambleCount = MODES[currentMode].scrambleMoves;
+      for (let i = 0; i < scrambleCount; i++) {
+        const r = Math.floor(Math.random() * rows);
+        const c = Math.floor(Math.random() * cols);
+        toggleCell(r, c);
+      }
+
+      // Asegurar que al menos una luz quede encendida
+      let anyOn = grid.some(row => row.some(val => val));
+      if (!anyOn) {
+        const r = Math.floor(Math.random() * rows);
+        const c = Math.floor(Math.random() * cols);
+        toggleCell(r, c);
+      }
+
+      initialScramble = grid.map(row => [...row]);
+      renderBoard();
+    }
+
+    function restartCurrentGame() {
+      clearHints();
+      moves = 0;
+      updateMovesDisplay();
+      startTimer();
+      isGameActive = true;
+      grid = initialScramble.map(row => [...row]);
+      updateTilesUI();
+    }
+
+    /* =========================================================================
+       RESOLVEDOR EXACTO GF(2) (Para el botón de Pista óptima)
+       ========================================================================= */
+    function clearHints() {
+      document.querySelectorAll('.tile.hint').forEach(t => t.classList.remove('hint'));
+    }
+
+    function solveGF2() {
+      const N = rows * cols;
+      const A = Array.from({ length: N }, () => new Uint8Array(N));
+      const b = new Uint8Array(N);
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const i = r * cols + c;
+          b[i] = grid[r][c] ? 1 : 0;
+
+          const deltas = [[0,0], [-1,0], [1,0], [0,-1], [0,1]];
+          deltas.forEach(([dr, dc]) => {
+            const nr = r + dr;
+            const nc = c + dc;
+            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+              const j = nr * cols + nc;
+              A[i][j] = 1;
+            }
+          });
+        }
+      }
+
+      const aug = Array.from({ length: N }, (unused, i) => {
+        const row = new Uint8Array(N + 1);
+        row.set(A[i]);
+        row[N] = b[i];
+        return row;
+      });
+
+      const pivotColToRow = new Array(N).fill(-1);
+      let lead = 0;
+
+      for (let col = 0; col < N && lead < N; col++) {
+        let pivot = lead;
+        while (pivot < N && aug[pivot][col] === 0) pivot++;
+
+        if (pivot === N) continue;
+
+        const temp = aug[lead];
+        aug[lead] = aug[pivot];
+        aug[pivot] = temp;
+
+        pivotColToRow[col] = lead;
+
+        for (let r = 0; r < N; r++) {
+          if (r !== lead && aug[r][col] === 1) {
+            for (let c = col; c <= N; c++) {
+              aug[r][c] ^= aug[lead][c];
+            }
+          }
+        }
+        lead++;
+      }
+
+      const freeCols = [];
+      for (let col = 0; col < N; col++) {
+        if (pivotColToRow[col] === -1) freeCols.push(col);
+      }
+
+      let bestX = null;
+      let minWeight = Infinity;
+      const totalCombos = 1 << freeCols.length;
+
+      for (let combo = 0; combo < totalCombos; combo++) {
+        const x = new Uint8Array(N);
+        for (let i = 0; i < freeCols.length; i++) {
+          if ((combo >> i) & 1) x[freeCols[i]] = 1;
+        }
+
+        for (let col = 0; col < N; col++) {
+          const pRow = pivotColToRow[col];
+          if (pRow !== -1) {
+            let sum = aug[pRow][N];
+            for (let j = 0; j < freeCols.length; j++) {
+              const fc = freeCols[j];
+              if (aug[pRow][fc] && x[fc]) sum ^= 1;
+            }
+            x[col] = sum;
+          }
+        }
+
+        let weight = 0;
+        for (let i = 0; i < N; i++) if (x[i]) weight++;
+
+        if (weight < minWeight) {
+          minWeight = weight;
+          bestX = x;
+        }
+      }
+
+      return bestX;
+    }
+
+    function requestHint() {
+      if (!isGameActive) return;
+      clearHints();
+
+      const solution = solveGF2();
+      if (!solution) return;
+
+      for (let i = 0; i < solution.length; i++) {
+        if (solution[i] === 1) {
+          const r = Math.floor(i / cols);
+          const c = i % cols;
+          const targetTile = document.querySelector(`.tile[data-row="${r}"][data-col="${c}"]`);
+          if (targetTile) {
+            targetTile.classList.add('hint');
+            playTone(880, 'sine', 0.12, 0.15);
+          }
+          break;
+        }
+      }
+    }
+
+    /* =========================================================================
+       MODALES Y CONFETI
+       ========================================================================= */
+    function showWinModal(isNewRecord) {
+      document.getElementById('win-moves').textContent = moves;
+      document.getElementById('win-time').textContent = formatTime(timerSeconds);
+      const msg = document.getElementById('win-message');
+      msg.textContent = isNewRecord 
+        ? '🏆 ¡Nuevo récord personal en este nivel!'
+        : '¡Has apagado todas las luces con éxito!';
+      
+      // Cargar último nombre usado
+      const lastName = localStorage.getItem('lightsout_last_player_name') || 'Jugador 1';
+      const input = document.getElementById('player-name-input');
+      input.value = lastName;
+
+      const saveBtn = document.getElementById('save-score-btn');
+      saveBtn.textContent = 'Guardar';
+      saveBtn.disabled = false;
+      saveBtn.style.opacity = '1';
+
+      document.getElementById('win-modal').classList.add('open');
+    }
+
+    function closeWinModal() {
+      document.getElementById('win-modal').classList.remove('open');
+    }
+
+    function showHelpModal() {
+      document.getElementById('help-modal').classList.add('open');
+    }
+
+    function closeHelpModal() {
+      document.getElementById('help-modal').classList.remove('open');
+    }
+
+    function launchConfetti() {
+      const canvas = document.getElementById('confetti-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particles = [];
+      const colors = ['#00f2fe', '#ffd166', '#06d6a0', '#ff007f', '#ffffff'];
+
+      for (let i = 0; i < 90; i++) {
+        particles.push({
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          vx: (Math.random() - 0.5) * 14,
+          vy: (Math.random() - 0.5) * 14 - 3,
+          size: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          gravity: 0.25,
+          alpha: 1,
+          decay: Math.random() * 0.02 + 0.015,
+          rotation: Math.random() * Math.PI * 2,
+          vRot: (Math.random() - 0.5) * 0.2
+        });
+      }
+
+      function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let active = false;
+
+        particles.forEach(p => {
+          if (p.alpha > 0) {
+            active = true;
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += p.gravity;
+            p.alpha -= p.decay;
+            p.rotation += p.vRot;
+
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rotation);
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = Math.max(0, p.alpha);
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+            ctx.restore();
+          }
+        });
+
+        if (active) {
+          requestAnimationFrame(render);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+
+      render();
+    }
+
+    window.addEventListener('resize', () => {
+      const canvas = document.getElementById('confetti-canvas');
+      if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadBestScore();
+      setMode('3x3');
+    });
+  </script>
+</body>
+</html>
+
+)rawliteral";

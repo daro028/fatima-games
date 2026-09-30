@@ -1,14 +1,19 @@
-# 🕹️ Juegos Fatima - Arcade Web & Microcontroladores
+# 🕹️ Fátima Games - Arcade Web & Microcontroladores
 
 Una colección de rompecabezas clásicos modernos, responsivos y 100% autónomos, listos para jugar en navegadores de PC, tablets, smartphones, **GitHub Pages**, microcontroladores **ESP32-C3 / ESP32-S3** o una **Raspberry Pi 4**.
 
+Repositorio oficial: [**github.com/daro028/fatima-games**](https://github.com/daro028/fatima-games)
+
 ---
 
-## 🎮 Juegos Incluidos
+## 🎮 Catálogo de Juegos
 
-### 1. 💡 Lights Out ([`index.html`](index.html))
+### 1. 🏠 Portal Principal ([`index.html`](index.html))
+- Pantalla de bienvenida / Hub de juegos que te permite elegir a qué juego entrar.
+
+### 2. 💡 Lights Out ([`lights-out.html`](lights-out.html))
 - Inspirado en el clásico de Tiger Electronics (1995) y [puzzle.now/lightsout](https://puzzle.now/lightsout/).
-- **Objetivo**: Apagar todas las luces del tablero. Cada pulsación conmuta la celda y sus vecinas directas.
+- **Objetivo**: Apagar todas las luces del tablero conmutando las casillas vecinas.
 - **Niveles**:
   - **Línea 1x5** (5 botones contiguos).
   - **Matriz 3x3** (9 botones).
@@ -16,7 +21,7 @@ Una colección de rompecabezas clásicos modernos, responsivos y 100% autónomos
 - **Pista Inteligente (💡 Pista)**: Resolvedor Gaussiano exacto sobre GF(2) que indica el movimiento óptimo en tiempo real.
 - **100% Soluble**: Generación matemática sin acertijos imposibles.
 
-### 2. 🌊 Flow Free ([`flow.html`](flow.html))
+### 3. 🌊 Flow Free ([`flow.html`](flow.html))
 - Inspirado en Numberlink y [puzzle.now/flow](https://puzzle.now/flow/).
 - **Objetivo**: Conectar los pares de puntos del mismo color mediante tuberías de neón continuas, sin que las líneas se crucen, y **cubriendo el 100% de las casillas** del tablero.
 - **Modos de Cuadrícula**:
@@ -40,13 +45,14 @@ Una colección de rompecabezas clásicos modernos, responsivos y 100% autónomos
 
 ## 🌐 Cómo Jugar en GitHub Pages (Online y Gratis)
 
-1. En tu repositorio de GitHub ([github.com/daro028/lights-out](https://github.com/daro028/lights-out)):
+1. En tu repositorio de GitHub ([github.com/daro028/fatima-games](https://github.com/daro028/fatima-games)):
 2. Ve a **Settings** > **Pages**.
 3. En **Branch**, selecciona `main` y la carpeta `/(root)`, luego haz clic en **Save**.
-4. En 1 minuto tendrás acceso a:
-   - **Lights Out**: `https://daro028.github.io/lights-out/`
-   - **Flow**: `https://daro028.github.io/lights-out/flow.html`
-   - **Admin**: `https://daro028.github.io/lights-out/admin.html`
+4. En 1 minuto tendrás acceso público en:
+   - **Portal / Inicio**: `https://daro028.github.io/fatima-games/`
+   - **Lights Out**: `https://daro028.github.io/fatima-games/lights-out.html`
+   - **Flow Free**: `https://daro028.github.io/fatima-games/flow.html`
+   - **Admin**: `https://daro028.github.io/fatima-games/admin.html`
 
 ---
 
@@ -57,7 +63,8 @@ Una colección de rompecabezas clásicos modernos, responsivos y 100% autónomos
 3. Sube el código mediante USB.
 4. El ESP32 creará la red Wi-Fi: **`Juegos-Fatima`**.
 5. Conéctate con tu celular o PC y abre:
-   - `http://192.168.4.1/` (Lights Out)
+   - `http://192.168.4.1/` (Portal Principal)
+   - `http://192.168.4.1/lights-out.html` (Lights Out)
    - `http://192.168.4.1/flow.html` (Flow Free)
    - `http://192.168.4.1/admin.html` (Panel Admin)
 
@@ -78,11 +85,13 @@ Acceso en red local: `http://IP_DE_TU_RASPBERRY:8080`.
 ```
 Juegos Fatima/
 │
-├── index.html            # Juego: Lights Out (con selector de juegos y ranking)
-├── flow.html             # Juego: Flow Free (canvas neón, táctil, niveles 5x5 a 8x8)
+├── index.html            # Portal / Hub de bienvenida a todos los juegos
+├── lights-out.html       # Juego: Lights Out (1x5, 3x3, 5x5 + pistas)
+├── flow.html             # Juego: Flow Free (canvas neón, táctil, 5x5 a 8x8)
 ├── admin.html            # Panel de Administración para ambos juegos (protegido por PIN)
 ├── esp32_lightsout.ino   # Firmware Arduino para ESP32-C3 / ESP32-S3 con LittleFS
-├── index_html.h          # Header C++ con index.html embebido
+├── index_html.h          # Header C++ con el portal embebido
+├── lights_out_html.h     # Header C++ con lights-out.html embebido
 ├── flow_html.h           # Header C++ con flow.html embebido
 ├── admin_html.h          # Header C++ con admin.html embebido
 ├── .gitignore            # Exclusiones para Git
