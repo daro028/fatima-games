@@ -1,0 +1,15 @@
+# Compilaciones de Arduino / ESP-IDF
+build/
+*.bin
+*.elf
+*.hex
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores y VSCode
+.vscode/
+.idea/
+*.swp
